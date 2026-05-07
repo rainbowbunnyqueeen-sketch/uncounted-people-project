@@ -96,7 +96,7 @@ Everything runs on free tiers. No ongoing cost for a proof of concept.
 
 ---
 
-## What We Need From Ivy and Andrew
+## Three Decisions needed from Ivy and Andrew
 
 Before building starts, it would help to know:
 
@@ -108,9 +108,6 @@ Before building starts, it would help to know:
 
 3. **Account name** — What should the site/tool be called? "The System Card"?
    Something else?
-
-4. **Domain** — Do they already have a domain name, or should we use a free
-   Vercel subdomain for now?
 
 ---
 
