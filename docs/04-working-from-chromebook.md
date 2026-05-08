@@ -5,6 +5,30 @@ Chromebook. No installations required. This guide explains your options.
 
 ---
 
+## Step 0 — Create a GitHub Account
+
+Everything in this project lives on GitHub. You need a free account to
+read files, make changes, and save your work.
+
+1. Go to **github.com** and click **Sign up**
+2. Enter your email address and create a password
+3. Choose a username — this will be visible publicly, so pick something
+   you are comfortable with
+4. Complete the short verification puzzle
+5. On the plan selection screen, choose **Free**
+6. You can skip the personalisation questions
+
+Once your account is created, send your GitHub username to whoever manages
+the project so they can add you as a collaborator. You will get an email
+invitation — click **Accept invitation** in that email before trying to
+make any changes to the project.
+
+**A note on age:** GitHub's terms of service require users to be 13 or
+older. If your school has a policy about signing up for external accounts,
+check with a parent or teacher first.
+
+---
+
 ## The Supabase Dashboard
 
 **What you use it for:** Setting up the database, adding columns to the
