@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -22,17 +23,18 @@ export default function LoginPage() {
       if (mode === 'signup') {
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) { setError(error.message); return }
-        // If email confirmation is on, session is null after signup —
-        // show a message instead of redirecting to a protected page.
-        if (!data.session) {
-          setError('Check your email for a confirmation link before signing in.')
-          return
+        if (data.session) {
+          window.location.href = '/dashboard'
+        } else {
+          // Supabase email confirmation is still on — account was created
+          // but they need to confirm before signing in.
+          setSuccess('Account created! Check your email for a confirmation link, then sign in.')
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) { setError(error.message); return }
+        window.location.href = '/dashboard'
       }
-      window.location.href = '/dashboard'
     } catch (err) {
       setError('Something went wrong. Please try again.')
       console.error(err)
@@ -56,6 +58,11 @@ export default function LoginPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">
             {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm mb-4">
+            {success}
           </div>
         )}
 
