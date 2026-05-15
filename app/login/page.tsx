@@ -20,16 +20,27 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({ email, password })
+        if (error) { setError(error.message); return }
+        // If email confirmation is on, session is null after signup —
+        // show a message instead of redirecting to a protected page.
+        if (!data.session) {
+          setError('Check your email for a confirmation link before signing in.')
+          return
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) { setError(error.message); return }
+      }
+      router.push('/dashboard')
+    } catch (err) {
+      setError('Something went wrong. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-
-    router.push('/dashboard')
-    router.refresh()
   }
 
   return (
