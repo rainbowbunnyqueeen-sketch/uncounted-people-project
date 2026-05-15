@@ -1,45 +1,74 @@
-import { notFound } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import FrontingBadge from '@/components/FrontingBadge'
+import type { System, Alter } from '@/lib/types'
 
-// Always fetch fresh data — fronting status can change at any time
-export const dynamic = 'force-dynamic'
+export default function PublicCardPage() {
+  const { token } = useParams<{ token: string }>()
+  const supabase = createClient()
 
-export default async function PublicCardPage({ params }: { params: { token: string } }) {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const [system, setSystem]   = useState<System | null>(null)
+  const [alters, setAlters]   = useState<Alter[]>([])
+  const [loading, setLoading] = useState(true)
+  const [missing, setMissing] = useState(false)
+
+  useEffect(() => {
+    async function load() {
+      const { data: sys } = await supabase
+        .from('systems')
+        .select('*')
+        .eq('share_token', token)
+        .single()
+
+      if (!sys) {
+        setMissing(true)
+        setLoading(false)
+        return
+      }
+
+      setSystem(sys)
+
+      const { data: alts } = await supabase
+        .from('alters')
+        .select('*')
+        .eq('system_id', sys.id)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true })
+
+      setAlters(alts ?? [])
+      setLoading(false)
+    }
+
+    load()
+  }, [token])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-amaryllis-bg flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
+      </div>
+    )
+  }
+
+  if (missing || !system) {
     return (
       <div className="min-h-screen bg-amaryllis-bg flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm text-center">
           <div className="text-4xl mb-4">🌺</div>
-          <h1 className="font-semibold text-gray-800 mb-2">Configuration error</h1>
+          <h1 className="font-semibold text-gray-800 mb-2">Card not found</h1>
           <p className="text-sm text-gray-500">
-            The server is missing a required environment variable.
-            Please contact the site administrator.
+            This link may have expired or the system may have regenerated their share link.
           </p>
         </div>
       </div>
     )
   }
 
-  const supabase = createAdminClient()
-
-  const { data: system } = await supabase
-    .from('systems')
-    .select('*')
-    .eq('share_token', params.token)
-    .single()
-
-  if (!system) notFound()
-
-  const { data: alters } = await supabase
-    .from('alters')
-    .select('*')
-    .eq('system_id', system.id)
-    .eq('is_visible', true)
-    .order('display_order', { ascending: true })
-
-  const fronting = (alters ?? []).filter(a => a.is_fronting)
-  const others   = (alters ?? []).filter(a => !a.is_fronting)
+  const fronting = alters.filter(a => a.is_fronting)
+  const others   = alters.filter(a => !a.is_fronting)
 
   return (
     <div className="min-h-screen bg-amaryllis-bg">

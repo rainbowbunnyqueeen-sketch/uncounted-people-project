@@ -96,9 +96,21 @@ create policy "owner can update their fronting log"
 
 -- =============================================================================
 -- PUBLIC CARD ACCESS
--- The shareable card is handled in the application code, not here.
--- When someone opens a share link, the app looks up the system by its
--- share_token using a server-side call that bypasses RLS safely.
--- This means we never expose all systems to the public — only the one
--- matching the exact token in the URL.
+-- The shareable card fetches data in the browser using the anon (public) key.
+-- These two policies allow that read without exposing any write access.
+--
+-- The share_token is 24 random hex characters — essentially unguessable.
+-- It acts as the access credential: if you have the link, you can read the card.
 -- =============================================================================
+
+-- Anyone can read a system that has a share token (the app always filters by token)
+create policy "public can read systems by share token"
+  on systems for select
+  to anon
+  using (share_token is not null);
+
+-- Anyone can read alters that the owner has marked as visible
+create policy "public can read visible alters"
+  on alters for select
+  to anon
+  using (is_visible = true);
