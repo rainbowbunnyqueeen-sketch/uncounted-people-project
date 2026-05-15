@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
@@ -14,26 +14,35 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Listen for Supabase auth state changes — redirect as soon as a
+  // session exists, regardless of how it was created.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        window.location.href = '/dashboard'
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setSuccess(null)
     setLoading(true)
 
     try {
       if (mode === 'signup') {
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) { setError(error.message); return }
-        if (data.session) {
-          window.location.href = '/dashboard'
-        } else {
-          // Supabase email confirmation is still on — account was created
-          // but they need to confirm before signing in.
+        if (!data.session) {
           setSuccess('Account created! Check your email for a confirmation link, then sign in.')
         }
+        // If session exists, onAuthStateChange fires and handles the redirect
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) { setError(error.message); return }
-        window.location.href = '/dashboard'
+        // onAuthStateChange fires and handles the redirect
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')
