@@ -3,6 +3,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import FrontingBadge from '@/components/FrontingBadge'
 
 export default async function PublicCardPage({ params }: { params: { token: string } }) {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return (
+      <div className="min-h-screen bg-amaryllis-bg flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm text-center">
+          <div className="text-4xl mb-4">🌺</div>
+          <h1 className="font-semibold text-gray-800 mb-2">Configuration error</h1>
+          <p className="text-sm text-gray-500">
+            The server is missing a required environment variable.
+            Please contact the site administrator.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const supabase = createAdminClient()
 
   const { data: system } = await supabase
